@@ -1,0 +1,542 @@
+package dev.gems;
+
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
+
+public enum Ability {
+    DASH("Dash", NamedTextColor.AQUA, Material.DIAMOND, 30, "Szybki zryw do przodu."),
+    DOUBLE_JUMP("Podwójny skok", NamedTextColor.WHITE, Material.QUARTZ, 30, "Wybijasz się wysoko w powietrze."),
+    SUPER_JUMP("Super skok", NamedTextColor.GREEN, Material.FEATHER, 30, "Wystrzeliwuje cię wysoko w górę, bez obrażeń z upadku."),
+    BLINK("Teleport", NamedTextColor.LIGHT_PURPLE, Material.PRISMARINE_CRYSTALS, 35, "Natychmiastowy skok o kilka bloków do przodu."),
+    PEARL("Perła Endermana", NamedTextColor.DARK_PURPLE, Material.AMETHYST_SHARD, 35, "Rzucasz perłę i się teleportujesz."),
+    WIND_CHARGE("Wind Charge", NamedTextColor.DARK_GREEN, Material.PRISMARINE_SHARD, 30, "Wystrzeliwujesz ładunek wiatru."),
+    GUST("Podmuch", NamedTextColor.GRAY, Material.BREEZE_ROD, 40, "Odpycha wszystkich wokół ciebie."),
+    SPEED("Szybkość", NamedTextColor.GREEN, Material.EMERALD, 40, "Duży przyrost prędkości na kilka sekund."),
+    STRENGTH("Siła", NamedTextColor.DARK_RED, Material.BLAZE_ROD, 45, "Zwiększa twoje obrażenia na 10 sekund."),
+    INVISIBILITY("Niewidzialność", NamedTextColor.DARK_GRAY, Material.COPPER_INGOT, 50, "Znikasz na kilka sekund."),
+    SHIELD("Tarcza", NamedTextColor.GOLD, Material.GOLD_NUGGET, 45, "Absorpcja i odporność na krótki czas."),
+    HEAL("Leczenie", NamedTextColor.RED, Material.GHAST_TEAR, 50, "Odnawia zdrowie i daje regenerację."),
+    SONIC_BOOM("Sonic Boom (Warden)", NamedTextColor.DARK_AQUA, Material.ECHO_SHARD, 45, "Fala dźwiękowa rani wszystko przed tobą."),
+    FIREBALL("Kula ognia", NamedTextColor.GOLD, Material.BLAZE_POWDER, 40, "Wybucha z siłą TNT."),
+    LIGHTNING("Piorun", NamedTextColor.YELLOW, Material.GLOWSTONE_DUST, 45, "Piorun uderza tam, gdzie patrzysz."),
+    CHAIN_LIGHTNING("Łańcuch piorunów", NamedTextColor.YELLOW, Material.GOLD_INGOT, 55, "Pioruny uderzają w kilku najbliższych wrogów."),
+    SLAM("Uderzenie w ziemię", NamedTextColor.GRAY, Material.IRON_NUGGET, 40, "Fala uderzeniowa wokół ciebie."),
+    FREEZE("Zamrożenie", NamedTextColor.BLUE, Material.LAPIS_LAZULI, 50, "Zamraża i spowalnia wrogów wokół ciebie."),
+    VORTEX("Wir", NamedTextColor.DARK_BLUE, Material.NAUTILUS_SHELL, 45, "Przyciąga pobliskich wrogów do ciebie."),
+    LEVITATE("Lewitacja wrogów", NamedTextColor.LIGHT_PURPLE, Material.SHULKER_SHELL, 50, "Unosi wrogów w powietrze."),
+    BLINDNESS("Ciemność", NamedTextColor.DARK_GRAY, Material.INK_SAC, 50, "Oślepia i oszałamia wrogów wokół ciebie."),
+    POISON_CLOUD("Trujący obłok", NamedTextColor.DARK_GREEN, Material.FERMENTED_SPIDER_EYE, 50, "Trująca chmura tam, gdzie patrzysz (nie wchodź w nią)."),
+    VAMPIRE("Wampiryzm", NamedTextColor.DARK_RED, Material.RABBIT_FOOT, 55, "Wysysa życie z pobliskich wrogów."),
+    RADAR("Radar", NamedTextColor.AQUA, Material.HEART_OF_THE_SEA, 35, "Podświetla wszystkich w promieniu 40 bloków."),
+    FIRE_RING("Pierścień ognia", NamedTextColor.RED, Material.MAGMA_CREAM, 45, "Podpala wrogów wokół ciebie."),
+    WITHER_SKULL("Czaszka Withera", NamedTextColor.DARK_GRAY, Material.NETHERITE_SCRAP, 45, "Wystrzeliwujesz czaszkę Withera."),
+    TNT_GRENADE("Granat TNT", NamedTextColor.RED, Material.GUNPOWDER, 55, "Rzucasz zapalone TNT."),
+    ARROW_RAIN("Deszcz strzał", NamedTextColor.WHITE, Material.ARROW, 50, "Deszcz strzał spada tam, gdzie patrzysz."),
+    WOLVES("Wilki", NamedTextColor.GRAY, Material.BONE, 60, "Przywołuje 3 wilki na 30 sekund."),
+    METEOR("Meteoryt", NamedTextColor.GOLD, Material.FLINT, 60, "Meteoryt spada z nieba tam, gdzie patrzysz.");
+
+    public final String displayName;
+    public final NamedTextColor color;
+    public final Material material;
+    public final int cooldown;
+    public final String description;
+
+    Ability(String displayName, NamedTextColor color, Material material, int cooldown, String description) {
+        this.displayName = displayName;
+        this.color = color;
+        this.material = material;
+        this.cooldown = cooldown;
+        this.description = description;
+    }
+}package dev.gems;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+public class GemsPlugin extends JavaPlugin implements Listener, TabExecutor {
+
+    private NamespacedKey gemKey;
+    private NamespacedKey equippedKey;
+    private NamespacedKey projKey;
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
+    private final Random random = new Random();
+    private final Set<Ability> dropped = EnumSet.noneOf(Ability.class);
+    private final Set<Wolf> summoned = new HashSet<>();
+    private File dataFile;
+    private double dropChance;
+    private int tickCount = 0;
+
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
+        dropChance = getConfig().getDouble("drop-chance", 0.05);
+        gemKey = new NamespacedKey(this, "gem");
+        equippedKey = new NamespacedKey(this, "equipped");
+        projKey = new NamespacedKey(this, "gemproj");
+        loadData();
+
+        Bukkit.getPluginManager().registerEvents(this, this);
+        var cmd = getCommand("gem");
+        if (cmd != null) {
+            cmd.setExecutor(this);
+            cmd.setTabCompleter(this);
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) updateFlight(p);
+        Bukkit.getScheduler().runTaskTimer(this, this::tick, 20L, 5L);
+    }
+
+    @Override
+    public void onDisable() {
+        for (Wolf w : new ArrayList<>(summoned)) {
+            if (w.isValid()) w.remove();
+        }
+        summoned.clear();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            GameMode gm = p.getGameMode();
+            if (gm == GameMode.SURVIVAL || gm == GameMode.ADVENTURE) {
+                p.setAllowFlight(false);
+                p.setFlying(false);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ data (unique drops)
+
+    private void loadData() {
+        dataFile = new File(getDataFolder(), "data.yml");
+        dropped.clear();
+        if (!dataFile.exists()) return;
+        YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+        for (String s : data.getStringList("dropped")) {
+            Ability a = parse(s);
+            if (a != null) dropped.add(a);
+        }
+    }
+
+    private void saveData() {
+        YamlConfiguration data = new YamlConfiguration();
+        List<String> names = new ArrayList<>();
+        for (Ability a : dropped) names.add(a.name());
+        data.set("dropped", names);
+        try {
+            data.save(dataFile);
+        } catch (IOException ex) {
+            getLogger().warning("Nie udało się zapisać data.yml: " + ex.getMessage());
+        }
+    }
+
+    // ------------------------------------------------------------ items
+
+    public ItemStack createGem(Ability a) {
+        ItemStack it = new ItemStack(a.material);
+        ItemMeta m = it.getItemMeta();
+        m.displayName(Component.text("Kryształ: " + a.displayName, a.color)
+                .decoration(TextDecoration.ITALIC, false));
+        m.lore(List.of(
+                Component.text(a.description, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
+                Component.empty(),
+                Component.text("PPM - załóż kryształ", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false),
+                Component.text("Podwójna spacja - użyj", NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false),
+                Component.text("Cooldown: " + a.cooldown + "s", NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false)
+        ));
+        m.setEnchantmentGlintOverride(true);
+        m.getPersistentDataContainer().set(gemKey, PersistentDataType.STRING, a.name());
+        it.setItemMeta(m);
+        return it;
+    }
+
+    private Ability abilityOf(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+        String s = item.getItemMeta().getPersistentDataContainer().get(gemKey, PersistentDataType.STRING);
+        return parse(s);
+    }
+
+    private Ability parse(String s) {
+        if (s == null) return null;
+        try {
+            return Ability.valueOf(s.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private Ability getEquipped(Player p) {
+        return parse(p.getPersistentDataContainer().get(equippedKey, PersistentDataType.STRING));
+    }
+
+    private void setEquipped(Player p, Ability a) {
+        if (a == null) p.getPersistentDataContainer().remove(equippedKey);
+        else p.getPersistentDataContainer().set(equippedKey, PersistentDataType.STRING, a.name());
+        updateFlight(p);
+    }
+
+    private void giveItem(Player p, ItemStack item) {
+        for (ItemStack left : p.getInventory().addItem(item).values()) {
+            p.getWorld().dropItemNaturally(p.getLocation(), left);
+        }
+    }
+
+    private void mark(Entity e) {
+        e.getPersistentDataContainer().set(projKey, PersistentDataType.BYTE, (byte) 1);
+    }
+
+    // ------------------------------------------------------------ flight / double-space handling
+
+    private boolean isReady(Player p) {
+        Long until = cooldowns.get(p.getUniqueId());
+        return until == null || until <= System.currentTimeMillis();
+    }
+
+    // Double space = toggle flight. Flight is allowed ONLY while a gem is equipped AND off cooldown,
+    // and it is switched off the moment the ability fires, so players can never really fly.
+    private void updateFlight(Player p) {
+        GameMode gm = p.getGameMode();
+        if (gm != GameMode.SURVIVAL && gm != GameMode.ADVENTURE) return;
+        boolean has = getEquipped(p) != null;
+        p.setAllowFlight(has && isReady(p));
+        if (!has) p.setFlying(false);
+    }
+
+    private void tick() {
+        tickCount++;
+        boolean bar = getConfig().getBoolean("show-cooldown-actionbar", true);
+        long now = System.currentTimeMillis();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            GameMode gm = p.getGameMode();
+            if (gm != GameMode.SURVIVAL && gm != GameMode.ADVENTURE) continue;
+            Ability a = getEquipped(p);
+            if (a == null) continue;
+            if (p.isFlying()) p.setFlying(false);
+            Long until = cooldowns.get(p.getUniqueId());
+            boolean ready = until == null || until <= now;
+            if (ready) {
+                if (!p.getAllowFlight()) p.setAllowFlight(true);
+            } else {
+                if (p.getAllowFlight()) p.setAllowFlight(false);
+                if (bar && tickCount % 4 == 0) {
+                    long left = (until - now + 999) / 1000;
+                    p.sendActionBar(Component.text(a.displayName + ": " + left + "s", NamedTextColor.RED));
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ events
+
+    @EventHandler
+    public void onMobDeath(EntityDeathEvent e) {
+        LivingEntity mob = e.getEntity();
+        if (mob instanceof Player || mob instanceof ArmorStand) return;
+        Player killer = mob.getKiller();
+        if (killer == null) return;
+
+        boolean unique = getConfig().getBoolean("unique-drops", true);
+        List<Ability> pool = new ArrayList<>();
+        for (Ability a : Ability.values()) {
+            if (!unique || !dropped.contains(a)) pool.add(a);
+        }
+        if (pool.isEmpty()) return;
+        if (random.nextDouble() >= dropChance) return;
+
+        Ability a = pool.get(random.nextInt(pool.size()));
+        if (unique) {
+            dropped.add(a);
+            saveData();
+        }
+        e.getDrops().add(createGem(a));
+        if (getConfig().getBoolean("announce-drops", true)) {
+            Bukkit.broadcast(Component.text(killer.getName() + " zdobył kryształ: " + a.displayName + "!", a.color));
+        }
+    }
+
+    // Dropped gems never despawn and can't be destroyed (so a unique gem isn't lost)
+    @EventHandler
+    public void onItemSpawn(ItemSpawnEvent e) {
+        Item it = e.getEntity();
+        if (abilityOf(it.getItemStack()) != null) {
+            it.setUnlimitedLifetime(true);
+            it.setInvulnerable(true);
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        if (e.getHand() != EquipmentSlot.HAND) return;
+        if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Player p = e.getPlayer();
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        Ability a = abilityOf(hand);
+        if (a == null) return;
+        e.setCancelled(true);
+
+        Ability old = getEquipped(p);
+        if (old == a) {
+            p.sendActionBar(Component.text("Ten kryształ jest już założony.", NamedTextColor.RED));
+            return;
+        }
+        if (hand.getAmount() > 1) hand.setAmount(hand.getAmount() - 1);
+        else p.getInventory().setItemInMainHand(null);
+
+        if (old != null) giveItem(p, createGem(old)); // limit: 1 założony kryształ
+        setEquipped(p, a);
+        p.playSound(p.getLocation(), Sound.ITEM_ARMOR_EQUIP_DIAMOND, 1f, 1.2f);
+        p.sendActionBar(Component.text("Założono: " + a.displayName + " - użyj podwójną spacją", a.color));
+    }
+
+    // Stop gems from being used on entities (feeding wolves, bartering with piglins, etc.)
+    @EventHandler
+    public void onInteractEntity(PlayerInteractEntityEvent e) {
+        Player p = e.getPlayer();
+        if (abilityOf(p.getInventory().getItem(e.getHand())) != null) e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onCraft(PrepareItemCraftEvent e) {
+        for (ItemStack i : e.getInventory().getMatrix()) {
+            if (abilityOf(i) != null) {
+                e.getInventory().setResult(null);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onToggleFlight(PlayerToggleFlightEvent e) {
+        Player p = e.getPlayer();
+        GameMode gm = p.getGameMode();
+        if (gm == GameMode.CREATIVE || gm == GameMode.SPECTATOR) return;
+        if (!e.isFlying()) return;
+        Ability a = getEquipped(p);
+        if (a == null) return;
+        e.setCancelled(true);
+        // Turn flight off immediately; the tick task turns it back on only after the cooldown.
+        p.setAllowFlight(false);
+        p.setFlying(false);
+        tryUse(p, a);
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        updateFlight(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        Player p = e.getPlayer();
+        GameMode gm = p.getGameMode();
+        if (gm == GameMode.SURVIVAL || gm == GameMode.ADVENTURE) {
+            p.setAllowFlight(false);
+            p.setFlying(false);
+        }
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent e) {
+        Player p = e.getPlayer();
+        Bukkit.getScheduler().runTask(this, () -> updateFlight(p));
+    }
+
+    @EventHandler
+    public void onGameMode(PlayerGameModeChangeEvent e) {
+        Player p = e.getPlayer();
+        Bukkit.getScheduler().runTask(this, () -> updateFlight(p));
+    }
+
+    @EventHandler
+    public void onExplode(EntityExplodeEvent e) {
+        if (getConfig().getBoolean("explosion-block-damage", false)) return;
+        if (e.getEntity().getPersistentDataContainer().has(projKey, PersistentDataType.BYTE)) {
+            e.blockList().clear();
+        }
+    }
+
+    // ------------------------------------------------------------ menu
+
+    private static class MenuHolder implements InventoryHolder {
+        private Inventory inv;
+
+        @Override
+        public Inventory getInventory() {
+            return inv;
+        }
+    }
+
+    private void openMenu(Player p) {
+        MenuHolder holder = new MenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 36, Component.text("Kryształy"));
+        holder.inv = inv;
+        int slot = 0;
+        for (Ability a : Ability.values()) inv.setItem(slot++, createGem(a));
+        p.openInventory(inv);
+    }
+
+    @EventHandler
+    public void onMenuClick(InventoryClickEvent e) {
+        if (!(e.getView().getTopInventory().getHolder() instanceof MenuHolder)) return;
+        e.setCancelled(true);
+        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
+        Ability a = abilityOf(e.getCurrentItem());
+        if (a == null) return;
+        if (e.getWhoClicked() instanceof Player p) {
+            giveItem(p, createGem(a));
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+        }
+    }
+
+    @EventHandler
+    public void onMenuDrag(InventoryDragEvent e) {
+        if (e.getView().getTopInventory().getHolder() instanceof MenuHolder) e.setCancelled(true);
+    }
+
+    // ------------------------------------------------------------ abilities
+
+    private void tryUse(Player p, Ability a) {
+        long now = System.currentTimeMillis();
+        Long until = cooldowns.get(p.getUniqueId());
+        if (until != null && until > now) {
+            double left = (until - now) / 1000.0;
+            p.sendActionBar(Component.text(String.format(Locale.US, "%s: cooldown %.1fs", a.displayName, left),
+                    NamedTextColor.RED));
+            return;
+        }
+        cooldowns.put(p.getUniqueId(), now + a.cooldown * 1000L);
+        useAbility(p, a);
+        p.sendActionBar(Component.text("Użyto: " + a.displayName, a.color));
+    }
+
+    private List<LivingEntity> nearbyLiving(Player p, double r) {
+        List<LivingEntity> list = new ArrayList<>();
+        for (Entity en : p.getNearbyEntities(r, r, r)) {
+            if (!(en instanceof LivingEntity le) || en instanceof ArmorStand) continue;
+            // don't hit the player's own summoned wolves / pets
+            if (en instanceof Tameable tm && p.getUniqueId().equals(tm.getOwnerUniqueId())) continue;
+            list.add(le);
+        }
+        return list;
+    }
+
+    private Location rayTarget(Player p, double dist) {
+        Location eye = p.getEyeLocation();
+        Vector dir = eye.getDirection();
+        RayTraceResult r = p.getWorld().rayTrace(eye, dir, dist, FluidCollisionMode.NEVER, true, 0.5,
+                en -> !en.equals(p) && en instanceof LivingEntity);
+        if (r != null) return r.getHitPosition().toLocation(p.getWorld());
+        return eye.clone().add(dir.clone().multiply(dist));
+    }
+
+    private void useAbility(Player p, Ability a) {
+        World w = p.getWorld();
+        Location loc = p.getLocation();
+        Location eye = p.getEyeLocation();
+        Vector dir = eye.getDirection().normalize();
+
+        switch (a) {
+            case DASH -> {
+                Vector v = dir.clone().setY(0);
+                if (v.lengthSquared() < 0.001) v = dir.clone();
+                v = v.normalize().multiply(1.9).setY(0.2);
+                p.setVelocity(v);
+                w.spawnParticle(Particle.CLOUD, loc, 20, 0.3, 0.1, 0.3, 0.05);
+                w.playSound(loc, Sound.ENTITY_BAT_TAKEOFF, 1f, 1.2f);
+            }
+            case DOUBLE_JUMP -> {
+                Vector cur = p.getVelocity();
+                p.setVelocity(new Vector(cur.getX() * 1.2, 0.95, cur.getZ() * 1.2));
+                p.setFallDistance(0f);
+                w.spawnParticle(Particle.CLOUD, loc, 20, 0.3, 0.05, 0.3, 0.05);
+                w.playSound(loc, Sound.ENTITY_BAT_TAKEOFF, 1f, 1.6f);
+            }
+            case SUPER_JUMP -> {
+                Vector cur = p.getVelocity();
+                p.setVelocity(new Vector(cur.getX(), 1.5, cur.getZ()));
+                p.setFallDistance(0f);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 200, 0));
+                w.spawnParticle(Particle.CLOUD, loc, 30, 0.3, 0.05, 0.3, 0.08);
+                w.playSound(loc, Sound.ENTITY_BAT_TAKEOFF, 1f, 0.8f);
+            }
+            case BLINK -> {
+                Vector h = dir.clone().setY(0);
+                if (h.lengthSquared() < 0.001) h = new Vector(0, 0, 1);
+                h.normalize();
+                for (int d = 8; d >= 1; d--) {
+                    Location dest = loc.clone().add(h.clone().multiply(d));
+                    if (dest.getBlock().isPassable() && dest.clone().add(0, 1, 0).getBlock().isPassable()) {
+                        w.spawnParticle(Particle.PORTAL, loc.clone().add(0, 1, 0), 40, 0.3, 0.6, 0.3, 0.5);
+                        p.teleport(dest);
+                        w.spawnParticle(Particle.PORTAL, dest.clone().add(0, 1, 0), 40, 0.3, 0.6, 0.3, 0.5);
+                        w.playSound(dest, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+                        break;
+                    }
+                }
+            }
+            case PEARL -> {
+                p.launchProjectile(EnderPearl.class);
+                w.playSound(loc, Sound.ENTITY_ENDER_PEARL_THROW, 1f, 1f);
+            }
+            case WIND_CHARGE -> {
+                p.launchProjectile(WindCharge.class);
+            }
+            case GUST -> {
+                for (LivingEntity ent : nearbyLiving(p, 6)) {
+                    Vector push = ent.getLocation().toVector().subtract(loc.toVector());
+                    if (push.lengthSquared() < 0.01) push = new Vector(0, 0, 1);
+                    ent.setVelocity(push.normalize().multiply(1.8).setY(0.6));
+                }
+                w.spawnParticle(Particle.CLOUD, loc.clone().add(0, 1, 0), 60, 2.5, 0.5, 2.5, 0.1);
+                w.playSound(loc, Sound.ENTITY_BAT_TAKEOFF, 1f, 0.5f);
+            }
+            case SPEED -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 160, 2));
+                w.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f);
+            }
+            case STRENGTH -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 200, 1));
+                w.spawnParticle(Particle.CRIT, loc.clone().add(0, 1, 0), 30, 0.4, 0.6, 0.4, 0.2);
+                w.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.6f);
+            }
+            case INVISIBILITY -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 200, 0, false, false, true));
+                w.spawnParticle(Particle.CLOUD, loc.clone().add(0, 1, 0), 30, 0.3, 0.6, 0.3, 0.05);
+            }
+            case SHIELD -> {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 200, 2));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 1));
+                w.playSound(loc, Sound.ITEM_ARMOR_EQUIP_GOLD, 1f, 1f);
+            }
+            case HEAL -> {
+                double max = p.getAttribute(Attribute.MAX_HEALTH).getValue();
+                p.setHealth(Math.min(max, p.getHealth() + 10));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 1
